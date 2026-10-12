@@ -38,3 +38,8 @@ bld/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Visual Studio nested template folder
+CollegeEventManagement/
+# Local environment secrets
+appsettings.*.local.json

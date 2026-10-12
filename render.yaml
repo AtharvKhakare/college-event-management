@@ -1,0 +1,30 @@
+# Render Blueprint Specification for College Event Management System
+services:
+  # 1. Backend REST API
+  - type: web
+    name: college-events-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.api
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: Jwt__Key
+        generateValue: true
+
+  # 2. Frontend MVC Web Application
+  - type: web
+    name: college-events-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile.web
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ApiBaseUrl
+        fromService:
+          type: web
+          name: college-events-api
+          property: host

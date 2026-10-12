@@ -13,12 +13,50 @@ using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Database Configuration
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+// 1. Database Configuration (Supports Render PostgreSQL and Local SQL Server)
+var rawConnectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? builder.Configuration["DATABASE_URL"]
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' or 'DATABASE_URL' not found.");
+
+var connectionString = rawConnectionString;
+
+// Handle Render PostgreSQL URL format (postgres:// or postgresql://)
+if (rawConnectionString.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
+    rawConnectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+{
+    try
+    {
+        var uri = new Uri(rawConnectionString);
+        var userInfo = uri.UserInfo.Split(':');
+        var username = userInfo[0];
+        var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var database = uri.AbsolutePath.TrimStart('/');
+        connectionString = $"Host={uri.Host};Port={port};Database={database};Username={username};Password={password};SSL Mode=Require;Trust Server Certificate=true;";
+    }
+    catch
+    {
+        connectionString = rawConnectionString;
+    }
+}
+
+bool isPostgreSql = connectionString.Contains("Host=", StringComparison.OrdinalIgnoreCase)
+    || connectionString.Contains("Server=dpg-", StringComparison.OrdinalIgnoreCase)
+    || connectionString.Contains("Port=5432", StringComparison.OrdinalIgnoreCase)
+    || connectionString.Contains("Username=", StringComparison.OrdinalIgnoreCase);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+{
+    if (isPostgreSql)
+    {
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        options.UseSqlServer(connectionString);
+    }
+});
 
 // 2. Identity Configuration
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

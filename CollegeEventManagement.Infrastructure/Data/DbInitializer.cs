@@ -19,8 +19,15 @@ public static class DbInitializer
         // 1. Ensure database is created and apply pending migrations
         try
         {
-            logger.LogInformation("Applying migrations...");
-            await context.Database.MigrateAsync();
+            if (context.Database.IsSqlServer())
+            {
+                logger.LogInformation("Applying SQL Server migrations...");
+                await context.Database.MigrateAsync();
+            }
+            else
+            {
+                logger.LogInformation("Database provider is '{Provider}'. Skipping SQL Server migrations to preserve database integrity.", context.Database.ProviderName);
+            }
         }
         catch (Exception ex)
         {

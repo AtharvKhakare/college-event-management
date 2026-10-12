@@ -9,6 +9,16 @@ builder.Services.AddHttpContextAccessor();
 
 // Configure HttpClient for Web API communication
 var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5172";
+if (!apiBaseUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && 
+    !apiBaseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+{
+    apiBaseUrl = "https://" + apiBaseUrl;
+}
+if (!apiBaseUrl.EndsWith("/"))
+{
+    apiBaseUrl += "/";
+}
+
 builder.Services.AddHttpClient<IApiService, ApiService>(client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl);
