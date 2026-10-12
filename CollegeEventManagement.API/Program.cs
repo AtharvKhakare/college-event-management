@@ -177,16 +177,13 @@ using (var scope = app.Services.CreateScope())
 // 8. HTTP Pipeline
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// Enable Swagger in Development and Staging
-if (app.Environment.IsDevelopment())
+// Enable Swagger documentation
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "College Event Management API v1");
-        c.RoutePrefix = "swagger";
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "College Event Management API v1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseStaticFiles(); // For uploaded event images
 app.UseRouting();
@@ -195,6 +192,15 @@ app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapGet("/", () => Results.Ok(new
+{
+    system = "College Event Registration and Management System API",
+    status = "Online",
+    database = "Render PostgreSQL Connected",
+    swaggerDocumentation = "/swagger",
+    eventsEndpoint = "/api/events"
+}));
 
 app.MapControllers();
 

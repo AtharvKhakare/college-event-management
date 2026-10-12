@@ -26,7 +26,8 @@ public static class DbInitializer
             }
             else
             {
-                logger.LogInformation("Database provider is '{Provider}'. Skipping SQL Server migrations to preserve database integrity.", context.Database.ProviderName);
+                logger.LogInformation("Database provider is '{Provider}'. Ensuring database schema exists...", context.Database.ProviderName);
+                await context.Database.EnsureCreatedAsync();
             }
         }
         catch (Exception ex)
