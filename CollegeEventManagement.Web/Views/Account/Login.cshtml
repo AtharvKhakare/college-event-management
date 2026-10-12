@@ -1,0 +1,97 @@
+@model LoginRequestDto
+@{
+    ViewData["Title"] = "Log In - CampusEvents";
+    var returnUrl = ViewBag.ReturnUrl as string;
+}
+
+<div class="container py-5 my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden bg-white">
+                <!-- Header banner -->
+                <div class="p-4 text-center text-white" style="background: linear-gradient(135deg, var(--dark-purple), var(--primary-purple));">
+                    <div class="stat-icon-box mx-auto mb-3 bg-white text-primary" style="width: 50px; height: 50px; font-size: 1.5rem;">
+                        <i class="bi bi-person-fill-lock"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1 text-white">Welcome Back</h3>
+                    <p class="small mb-0 opacity-75">Sign in to manage registrations or access campus events</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger rounded-3 py-2 small mb-3">
+                            <div asp-validation-summary="All" class="text-danger mb-0"></div>
+                        </div>
+                    }
+
+                    <form asp-controller="Account" asp-action="Login" asp-route-returnUrl="@returnUrl" method="post" id="loginForm">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label fw-semibold small text-muted">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                                <input asp-for="Email" class="form-control form-control-custom border-start-0" id="emailInput" placeholder="name@college.edu" autofocus />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label asp-for="Password" class="form-label fw-semibold small text-muted mb-0">Password</label>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted">
+                                    <i class="bi bi-shield-lock"></i>
+                                </span>
+                                <input asp-for="Password" type="password" class="form-control form-control-custom border-start-0" id="passwordInput" placeholder="••••••••" />
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-purple w-100 py-2 mb-3">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </button>
+                    </form>
+
+                    <!-- Quick Demo Credentials Box for Evaluation -->
+                    <div class="mt-4 p-3 rounded-4 bg-light border">
+                        <span class="d-block small fw-bold text-muted mb-2 text-uppercase" style="letter-spacing: 0.05em;">
+                            <i class="bi bi-lightning-charge-fill text-warning"></i> One-Click Demo Credentials
+                        </span>
+                        <div class="d-flex flex-column gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary d-flex justify-content-between align-items-center rounded-3 bg-white" onclick="fillCredentials('admin@collegeevents.edu', 'Admin@Secure123!')">
+                                <span><strong class="text-danger">Admin:</strong> admin@collegeevents.edu</span>
+                                <span class="badge bg-danger-subtle text-danger">Auto Fill</span>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary d-flex justify-content-between align-items-center rounded-3 bg-white" onclick="fillCredentials('student@collegeevents.edu', 'Student@Secure123!')">
+                                <span><strong class="text-primary">Student:</strong> student@collegeevents.edu</span>
+                                <span class="badge bg-primary-subtle text-primary">Auto Fill</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4 pt-2 border-top">
+                        <span class="text-muted small">New student?</span>
+                        <a asp-controller="Account" asp-action="Register" class="text-primary fw-bold text-decoration-none small ms-1">
+                            Register Here
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function fillCredentials(email, password) {
+            document.getElementById('emailInput').value = email;
+            document.getElementById('passwordInput').value = password;
+        }
+    </script>
+}

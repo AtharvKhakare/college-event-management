@@ -1,0 +1,71 @@
+@model UserProfileDto
+@{
+    ViewData["Title"] = "Student Profile - CampusEvents";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb small">
+                    <li class="breadcrumb-item"><a asp-action="Dashboard" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Profile</li>
+                </ol>
+            </nav>
+
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                <div class="p-4 text-white" style="background: linear-gradient(135deg, var(--dark-purple), var(--primary-purple));">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="stat-icon-box bg-white text-primary" style="width: 64px; height: 64px; font-size: 2rem;">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <div>
+                            <h3 class="fw-bold mb-0 text-white">@Model.FullName</h3>
+                            <span class="opacity-75 small">@Model.Email</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <h5 class="fw-bold mb-4" style="color: var(--dark-purple);">Academic Details</h5>
+                    
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light border">
+                                <span class="text-muted small d-block">Student ID / Roll No.</span>
+                                <strong class="fs-6">@(Model.StudentId ?? "Not provided")</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light border">
+                                <span class="text-muted small d-block">Department</span>
+                                <strong class="fs-6">@(Model.Department ?? "Not provided")</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light border">
+                                <span class="text-muted small d-block">Academic Year</span>
+                                <strong class="fs-6">@(Model.AcademicYear ?? "Not provided")</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 rounded-3 bg-light border">
+                                <span class="text-muted small d-block">Account Created</span>
+                                <strong class="fs-6">@Model.CreatedAt.ToString("MMMM dd, yyyy")</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a asp-action="EditProfile" class="btn btn-primary-purple">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Profile
+                        </a>
+                        <a asp-action="Dashboard" class="btn btn-outline-secondary rounded-pill">
+                            Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

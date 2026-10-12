@@ -1,0 +1,234 @@
+@model PagedResult<EventDto>
+@{
+    ViewData["Title"] = "Explore All Events - CampusEvents";
+    var filter = ViewBag.Filter as EventFilterDto ?? new EventFilterDto();
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb small mb-1">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-decoration-none">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Events</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">Campus Events Directory</h2>
+            <p class="text-muted small mb-0">Browse and register for activities across all academic departments</p>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <span class="badge bg-white text-dark border px-3 py-2 rounded-pill shadow-sm">
+                <i class="bi bi-calendar-check text-primary me-1"></i> Showing @Model.Items.Count of @Model.TotalCount Total Events
+            </span>
+        </div>
+    </div>
+
+    <!-- Filter & Search Controls -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+        <form asp-controller="Events" asp-action="Index" method="get" class="row g-2 align-items-center">
+            <!-- Search Keyword -->
+            <div class="col-lg-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted">
+                        <i class="bi bi-search text-primary"></i>
+                    </span>
+                    <input type="text" name="search" value="@filter.Search" class="form-control form-control-custom border-start-0" placeholder="Search by title, venue, or organizer..." />
+                </div>
+            </div>
+
+            <!-- Category Picker -->
+            <div class="col-md-4 col-lg-3">
+                <select name="category" class="form-select form-select-custom">
+                    <option value="">All Categories</option>
+                    @foreach (var cat in EventCategories.All)
+                    {
+                        if (filter.Category == cat)
+                        {
+                            <option value="@cat" selected>@cat</option>
+                        }
+                        else
+                        {
+                            <option value="@cat">@cat</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Date Filter -->
+            <div class="col-md-4 col-lg-2">
+                <input type="date" name="fromDate" value="@(filter.FromDate?.ToString("yyyy-MM-dd"))" class="form-control form-control-custom" placeholder="From Date" />
+            </div>
+
+            <!-- Submit & Reset -->
+            <div class="col-md-4 col-lg-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary-purple flex-grow-1">
+                    <i class="bi bi-funnel-fill"></i> Filter
+                </button>
+                <a asp-controller="Events" asp-action="Index" class="btn btn-outline-secondary rounded-pill" title="Reset Filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+            </div>
+        </form>
+
+        <!-- Quick Category Chips -->
+        <div class="d-flex flex-wrap gap-2 pt-3 border-top mt-3">
+            <span class="text-muted small align-self-center me-1">Quick Select:</span>
+            <a asp-controller="Events" asp-action="Index" asp-route-search="@filter.Search" class="category-chip @(string.IsNullOrEmpty(filter.Category) ? "active" : "")">
+                All
+            </a>
+            @foreach (var cat in EventCategories.All)
+            {
+                <a asp-controller="Events" asp-action="Index" asp-route-category="@cat" asp-route-search="@filter.Search" class="category-chip @(filter.Category == cat ? "active" : "")">
+                    @cat
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Events Grid -->
+    @if (!Model.Items.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+            <div class="stat-icon-box mx-auto mb-3" style="width: 70px; height: 70px; font-size: 2rem;">
+                <i class="bi bi-search"></i>
+            </div>
+            <h4 class="fw-bold mb-2">No events match your criteria</h4>
+            <p class="text-muted mb-4">Try clearing your search query or picking a different category filter.</p>
+            <div>
+                <a asp-controller="Events" asp-action="Index" class="btn btn-primary-purple">
+                    View All Events
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4 mb-4">
+            @foreach (var ev in Model.Items)
+            {
+                var categoryBadgeClass = ev.Category.ToLower() switch
+                {
+                    "technical" => "badge-technical",
+                    "cultural" => "badge-cultural",
+                    "sports" => "badge-sports",
+                    "workshop" => "badge-workshop",
+                    "seminar" => "badge-seminar",
+                    _ => "badge-general"
+                };
+
+                var percentFilled = ev.Capacity > 0 ? (int)Math.Min(100, Math.Round((double)ev.RegisteredCount / ev.Capacity * 100)) : 0;
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="event-card">
+                        <div class="event-card-img-wrapper">
+                            <span class="event-card-badge @categoryBadgeClass">@ev.Category</span>
+                            <img src="@ev.ImageUrl" alt="@ev.Title" class="event-card-img" onerror="this.onerror=null; this.src='/images/events/default-event.jpg';" />
+                        </div>
+                        <div class="event-card-body">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="badge bg-light text-dark border rounded-pill px-2 py-1 small">
+                                    <i class="bi bi-calendar3 text-primary me-1"></i> @ev.EventDate.ToString("MMM dd, yyyy")
+                                </span>
+                                <span class="small text-muted">
+                                    <i class="bi bi-clock text-primary me-1"></i> @ev.StartTime.ToString(@"hh\:mm")
+                                </span>
+                            </div>
+
+                            <h5 class="event-card-title text-truncate" title="@ev.Title">@ev.Title</h5>
+                            <p class="text-muted small flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                @ev.Description
+                            </p>
+
+                            <div class="event-meta-item">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <span class="text-truncate">@ev.Venue</span>
+                            </div>
+
+                            <div class="event-meta-item">
+                                <i class="bi bi-person-fill"></i>
+                                <span class="text-truncate small">@ev.OrganizerName</span>
+                            </div>
+
+                            <!-- Capacity Progress Bar -->
+                            <div class="mt-3 mb-3">
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span>Registered: @ev.RegisteredCount / @ev.Capacity</span>
+                                    <span>@(ev.RemainingCapacity) Seats Left</span>
+                                </div>
+                                <div class="capacity-progress">
+                                    <div class="capacity-progress-bar" style="width: @percentFilled%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-top d-flex gap-2">
+                                <a asp-controller="Events" asp-action="Details" asp-route-id="@ev.EventId" class="btn btn-light-lavender flex-grow-1 text-center">
+                                    View Details
+                                </a>
+                                @if (ev.IsUserRegistered)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 d-flex align-items-center">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Registered
+                                    </span>
+                                }
+                                else if (ev.IsRegistrationOpen)
+                                {
+                                    <a asp-controller="Events" asp-action="Details" asp-route-id="@ev.EventId" class="btn btn-primary-purple flex-shrink-0">
+                                        Register
+                                    </a>
+                                }
+                                else if (ev.IsFull)
+                                {
+                                    <button class="btn btn-secondary rounded-pill flex-shrink-0" disabled>Sold Out</button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-outline-secondary rounded-pill flex-shrink-0" disabled>Closed</button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                        <a class="page-link rounded-pill me-1" asp-controller="Events" asp-action="Index" 
+                           asp-route-pageNumber="@(Model.PageNumber - 1)" 
+                           asp-route-search="@filter.Search" 
+                           asp-route-category="@filter.Category"
+                           asp-route-fromDate="@(filter.FromDate?.ToString("yyyy-MM-dd"))">
+                            <i class="bi bi-chevron-left"></i> Previous
+                        </a>
+                    </li>
+                    @for (int p = 1; p <= Model.TotalPages; p++)
+                    {
+                        <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                            <a class="page-link rounded-pill mx-1" asp-controller="Events" asp-action="Index" 
+                               asp-route-pageNumber="@p" 
+                               asp-route-search="@filter.Search" 
+                               asp-route-category="@filter.Category"
+                               asp-route-fromDate="@(filter.FromDate?.ToString("yyyy-MM-dd"))">
+                                @p
+                            </a>
+                        </li>
+                    }
+                    <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                        <a class="page-link rounded-pill ms-1" asp-controller="Events" asp-action="Index" 
+                           asp-route-pageNumber="@(Model.PageNumber + 1)" 
+                           asp-route-search="@filter.Search" 
+                           asp-route-category="@filter.Category"
+                           asp-route-fromDate="@(filter.FromDate?.ToString("yyyy-MM-dd"))">
+                            Next <i class="bi bi-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    }
+</div>

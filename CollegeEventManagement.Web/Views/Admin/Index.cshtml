@@ -1,0 +1,314 @@
+@model AdminDashboardDto
+@{
+    ViewData["Title"] = "Admin Dashboard - CampusEvents";
+}
+
+<div class="admin-layout">
+    <!-- Admin Sidebar -->
+    <partial name="_AdminSidebar" />
+
+    <!-- Admin Content Area -->
+    <div class="admin-content">
+        <!-- Header & Quick Actions -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+                <h2 class="fw-bold mb-1" style="color: var(--dark-purple);">Admin Dashboard</h2>
+                <p class="text-muted small mb-0">Overview of campus activities, registrations, and student engagement</p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <a asp-action="CreateEvent" class="btn btn-primary-purple">
+                    <i class="bi bi-plus-circle me-1"></i> New Event
+                </a>
+                <a asp-action="Attendance" class="btn btn-outline-purple">
+                    <i class="bi bi-clipboard-check me-1"></i> Attendance
+                </a>
+                <a asp-action="Reports" class="btn btn-light-lavender">
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i> Export CSV
+                </a>
+            </div>
+        </div>
+
+        <!-- 5 KPI Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-auto flex-grow-1">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="stat-label">Total Events</span>
+                            <div class="stat-number">@Model.TotalEvents</div>
+                        </div>
+                        <div class="stat-icon-box">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-auto flex-grow-1">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="stat-label">Registered Students</span>
+                            <div class="stat-number" style="color: #2563EB;">@Model.TotalStudents</div>
+                        </div>
+                        <div class="stat-icon-box" style="background-color: #DBEAFE; color: #2563EB;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-auto flex-grow-1">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="stat-label">Total Bookings</span>
+                            <div class="stat-number" style="color: #059669;">@Model.TotalRegistrations</div>
+                        </div>
+                        <div class="stat-icon-box" style="background-color: #DCFCE7; color: #059669;">
+                            <i class="bi bi-ticket-perforated"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-auto flex-grow-1">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="stat-label">Upcoming Events</span>
+                            <div class="stat-number" style="color: #D97706;">@Model.UpcomingEventsCount</div>
+                        </div>
+                        <div class="stat-icon-box" style="background-color: #FEF3C7; color: #D97706;">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-auto flex-grow-1">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <span class="stat-label">Attendance Rate</span>
+                            <div class="stat-number" style="color: var(--primary-purple);">@Model.AttendanceRate%</div>
+                        </div>
+                        <div class="stat-icon-box" style="background-color: var(--light-lavender); color: var(--primary-purple);">
+                            <i class="bi bi-patch-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart.js Visualizations Row -->
+        <div class="row g-4 mb-4">
+            <!-- Monthly Registrations Chart -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Monthly Registration Trends</h5>
+                        <span class="badge bg-light text-muted border">Last 6 Months</span>
+                    </div>
+                    <div style="position: relative; height: 280px; width: 100%;">
+                        <canvas id="monthlyRegistrationsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Distribution Chart -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">By Event Category</h5>
+                        <span class="badge bg-light text-muted border">Distribution</span>
+                    </div>
+                    <div style="position: relative; height: 280px; width: 100%;">
+                        <canvas id="categoryDistributionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Stats Chips -->
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+            <div class="row g-3 text-center">
+                <div class="col-md-4">
+                    <div class="p-2 rounded-3 bg-success-subtle text-success">
+                        <span class="small fw-semibold d-block">Verified Present</span>
+                        <h4 class="fw-bold mb-0">@Model.TotalPresent</h4>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-2 rounded-3 bg-danger-subtle text-danger">
+                        <span class="small fw-semibold d-block">Marked Absent</span>
+                        <h4 class="fw-bold mb-0">@Model.TotalAbsent</h4>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-2 rounded-3 bg-primary-subtle text-primary">
+                        <span class="small fw-semibold d-block">Pending / Unmarked</span>
+                        <h4 class="fw-bold mb-0">@Model.TotalUnmarked</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tables Row: Recent Registrations & Upcoming Events -->
+        <div class="row g-4">
+            <!-- Recent Registrations Table -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Recent Registrations</h5>
+                        <a asp-action="Registrations" class="btn btn-sm btn-outline-purple">View All</a>
+                    </div>
+
+                    @if (!Model.RecentRegistrations.Any())
+                    {
+                        <div class="p-4 text-center text-muted">No recent registrations found.</div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0 small">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Event</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var reg in Model.RecentRegistrations)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong class="d-block">@reg.StudentName</strong>
+                                                <span class="text-muted" style="font-size: 0.78rem;">@(reg.StudentId ?? reg.StudentEmail)</span>
+                                            </td>
+                                            <td class="text-truncate" style="max-width: 160px;" title="@reg.EventTitle">
+                                                @reg.EventTitle
+                                            </td>
+                                            <td>
+                                                <span class="badge @(reg.Status == RegistrationStatus.Approved ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning") rounded-pill">
+                                                    @reg.Status
+                                                </span>
+                                            </td>
+                                            <td class="text-muted">@reg.RegistrationDate.ToString("MMM dd")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Upcoming Events Table -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Upcoming Events</h5>
+                        <a asp-action="Events" class="btn btn-sm btn-outline-purple">Manage</a>
+                    </div>
+
+                    @if (!Model.UpcomingEvents.Any())
+                    {
+                        <div class="p-4 text-center text-muted">No upcoming events scheduled.</div>
+                    }
+                    else
+                    {
+                        <div class="d-flex flex-column gap-2">
+                            @foreach (var ev in Model.UpcomingEvents)
+                            {
+                                <div class="p-2 rounded-3 bg-light border d-flex justify-content-between align-items-center">
+                                    <div class="text-truncate me-2" style="max-width: 220px;">
+                                        <strong class="d-block text-truncate small" title="@ev.Title">@ev.Title</strong>
+                                        <span class="text-muted" style="font-size: 0.75rem;">
+                                            <i class="bi bi-calendar3 me-1"></i>@ev.EventDate.ToString("MMM dd") | Seats: @ev.RegisteredCount/@ev.Capacity
+                                        </span>
+                                    </div>
+                                    <a asp-action="EventDetails" asp-route-id="@ev.EventId" class="btn btn-sm btn-light-lavender flex-shrink-0" title="View details">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Data for Monthly Registrations Chart
+        const monthlyLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyRegistrations.Select(m => m.Label)));
+        const monthlyValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyRegistrations.Select(m => m.Value)));
+
+        const monthlyCtx = document.getElementById('monthlyRegistrationsChart').getContext('2d');
+        new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Registrations',
+                    data: monthlyValues,
+                    backgroundColor: '#6C3CE9',
+                    borderRadius: 8,
+                    hoverBackgroundColor: '#4527A0'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // Data for Category Distribution Chart
+        const catLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryDistribution.Select(c => c.Label)));
+        const catValues = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryDistribution.Select(c => c.Value)));
+
+        const catCtx = document.getElementById('categoryDistributionChart').getContext('2d');
+        new Chart(catCtx, {
+            type: 'doughnut',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catValues,
+                    backgroundColor: [
+                        '#6C3CE9',
+                        '#9333EA',
+                        '#059669',
+                        '#4F46E5',
+                        '#D97706'
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#FFFFFF'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 12, font: { size: 11 } }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    </script>
+}

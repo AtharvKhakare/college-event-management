@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="CollegeEventManagement.API/CollegeEventManagement.API.csproj" />
+  <Project Path="CollegeEventManagement.Core/CollegeEventManagement.Core.csproj" />
+  <Project Path="CollegeEventManagement.Infrastructure/CollegeEventManagement.Infrastructure.csproj" />
+  <Project Path="CollegeEventManagement.Web/CollegeEventManagement.Web.csproj" />
+</Solution>

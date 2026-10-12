@@ -1,0 +1,98 @@
+@model List<RegistrationDto>
+@{
+    ViewData["Title"] = "Registration History - CampusEvents";
+}
+
+<div class="container py-4">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb small mb-1">
+                    <li class="breadcrumb-item"><a asp-action="Dashboard" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="MyRegistrations" class="text-decoration-none">My Registrations</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">History</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">Full Registration History</h2>
+            <p class="text-muted small mb-0">All past, present, and cancelled bookings with verified attendance status</p>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <a asp-action="MyRegistrations" class="btn btn-outline-purple">
+                <i class="bi bi-arrow-left me-1"></i> Back to My Tickets
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+        @if (!Model.Any())
+        {
+            <div class="p-5 text-center">
+                <i class="bi bi-clock-history fs-1 text-muted mb-2 d-block"></i>
+                <h5 class="fw-bold text-muted">No registration records found</h5>
+                <p class="text-muted small">You haven't participated in any events yet.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Event Title</th>
+                            <th>Category</th>
+                            <th>Event Date</th>
+                            <th>Booking Date</th>
+                            <th>Status</th>
+                            <th>Attendance</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var reg in Model)
+                        {
+                            var statusBadge = reg.Status switch
+                            {
+                                RegistrationStatus.Approved => "badge-approved",
+                                RegistrationStatus.Pending => "badge-pending",
+                                RegistrationStatus.Rejected => "badge-rejected",
+                                RegistrationStatus.Cancelled => "badge-cancelled",
+                                _ => "badge-cancelled"
+                            };
+
+                            var attendanceBadge = reg.AttendanceStatus switch
+                            {
+                                AttendanceStatuses.Present => "badge-present",
+                                AttendanceStatuses.Absent => "badge-absent",
+                                _ => "badge-unmarked"
+                            };
+
+                            <tr>
+                                <td><strong class="text-primary">#REG-@reg.RegistrationId.ToString("D5")</strong></td>
+                                <td>
+                                    <span class="fw-semibold">@reg.EventTitle</span>
+                                    <div class="small text-muted"><i class="bi bi-geo-alt me-1"></i>@reg.Venue</div>
+                                </td>
+                                <td><span class="badge bg-light text-dark border">@reg.EventCategory</span></td>
+                                <td>@reg.EventDate.ToString("MMM dd, yyyy")</td>
+                                <td>@reg.RegistrationDate.ToString("MMM dd, yyyy")</td>
+                                <td><span class="badge-status @statusBadge">@reg.Status</span></td>
+                                <td>
+                                    <span class="badge-status @attendanceBadge">
+                                        <i class="bi @(reg.AttendanceStatus == AttendanceStatuses.Present ? "bi-check-circle" : reg.AttendanceStatus == AttendanceStatuses.Absent ? "bi-x-circle" : "bi-dash-circle")"></i>
+                                        @reg.AttendanceStatus
+                                    </span>
+                                </td>
+                                <td>
+                                    <a asp-controller="Events" asp-action="Details" asp-route-id="@reg.EventId" class="btn btn-sm btn-light-lavender">
+                                        View Event
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

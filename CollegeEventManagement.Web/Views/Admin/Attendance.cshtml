@@ -1,0 +1,173 @@
+@model PagedResult<RegistrationDto>
+@{
+    ViewData["Title"] = "Attendance Management - Admin";
+    var events = ViewBag.Events as List<EventDto> ?? new List<EventDto>();
+    var selectedEventId = ViewBag.SelectedEventId as int?;
+    var search = ViewBag.Search as string;
+
+    var presentCount = Model.Items.Count(r => r.AttendanceStatus == AttendanceStatuses.Present);
+    var absentCount = Model.Items.Count(r => r.AttendanceStatus == AttendanceStatuses.Absent);
+    var unmarkedCount = Model.Items.Count(r => r.AttendanceStatus == AttendanceStatuses.Unmarked);
+}
+
+<div class="admin-layout">
+    <partial name="_AdminSidebar" />
+
+    <div class="admin-content">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold mb-1" style="color: var(--dark-purple);">Attendance Verification</h2>
+                <p class="text-muted small mb-0">Record and verify on-ground attendance for registered attendees</p>
+            </div>
+            <a asp-action="Reports" class="btn btn-outline-purple">
+                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Attendance Reports
+            </a>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+            <form asp-action="Attendance" method="get" class="row g-2 align-items-center">
+                <div class="col-md-6">
+                    <label class="form-label small fw-semibold text-muted mb-1">Select Event to Verify Attendance</label>
+                    <select name="eventId" class="form-select form-select-custom" onchange="this.form.submit()">
+                        <option value="">-- Choose an Event --</option>
+                        @foreach (var ev in events)
+                        {
+                            if (selectedEventId == ev.EventId)
+                            {
+                                <option value="@ev.EventId" selected>@ev.Title (@ev.EventDate.ToString("MMM dd"))</option>
+                            }
+                            else
+                            {
+                                <option value="@ev.EventId">@ev.Title (@ev.EventDate.ToString("MMM dd"))</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-muted mb-1">Search Student / Roll No</label>
+                    <input type="text" name="search" value="@search" class="form-control form-control-custom" placeholder="Search attendee..." />
+                </div>
+                <div class="col-md-2 d-flex align-items-end mt-md-4 pt-md-2">
+                    <button type="submit" class="btn btn-primary-purple w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+
+        @if (!selectedEventId.HasValue)
+        {
+            <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+                <div class="stat-icon-box mx-auto mb-3" style="width: 70px; height: 70px; font-size: 2rem;">
+                    <i class="bi bi-clipboard-check"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Please select an event</h5>
+                <p class="text-muted small mb-0">Choose an event from the dropdown above to mark and track student attendance.</p>
+            </div>
+        }
+        else
+        {
+            <!-- Attendance Stat Summary Chips -->
+            <div class="row g-3 mb-4 text-center">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                        <span class="text-success small fw-bold text-uppercase">Present</span>
+                        <h3 class="fw-bold mb-0 text-success">@presentCount</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                        <span class="text-danger small fw-bold text-uppercase">Absent</span>
+                        <h3 class="fw-bold mb-0 text-danger">@absentCount</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                        <span class="text-primary small fw-bold text-uppercase">Unmarked / Pending</span>
+                        <h3 class="fw-bold mb-0 text-primary">@unmarkedCount</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Table -->
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+                @if (!Model.Items.Any())
+                {
+                    <div class="p-5 text-center text-muted">
+                        <h6>No approved attendees registered for this event.</h6>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-custom align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Ticket ID</th>
+                                    <th>Student Name</th>
+                                    <th>Roll / ID No.</th>
+                                    <th>Department</th>
+                                    <th>Current Status</th>
+                                    <th class="text-end">Mark Attendance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var reg in Model.Items)
+                                {
+                                    var attBadge = reg.AttendanceStatus switch
+                                    {
+                                        AttendanceStatuses.Present => "badge-present",
+                                        AttendanceStatuses.Absent => "badge-absent",
+                                        _ => "badge-unmarked"
+                                    };
+
+                                    <tr>
+                                        <td><strong class="text-primary">#REG-@reg.RegistrationId.ToString("D5")</strong></td>
+                                        <td>
+                                            <strong class="d-block text-dark">@reg.StudentName</strong>
+                                            <span class="text-muted small">@reg.StudentEmail</span>
+                                        </td>
+                                        <td><strong>@(reg.StudentId ?? "-")</strong></td>
+                                        <td>@(reg.Department ?? "-")</td>
+                                        <td>
+                                            <span class="badge-status @attBadge">
+                                                <i class="bi @(reg.AttendanceStatus == AttendanceStatuses.Present ? "bi-check-circle" : reg.AttendanceStatus == AttendanceStatuses.Absent ? "bi-x-circle" : "bi-dash-circle")"></i>
+                                                @reg.AttendanceStatus
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                                <!-- Present Button -->
+                                                <form asp-action="UpdateAttendance" asp-route-id="@reg.RegistrationId" asp-route-attendanceStatus="@AttendanceStatuses.Present" asp-route-eventId="@selectedEventId" asp-route-search="@search" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn @(reg.AttendanceStatus == AttendanceStatuses.Present ? "btn-success" : "btn-outline-success")" title="Mark Present">
+                                                        <i class="bi bi-check-lg"></i> Present
+                                                    </button>
+                                                </form>
+
+                                                <!-- Absent Button -->
+                                                <form asp-action="UpdateAttendance" asp-route-id="@reg.RegistrationId" asp-route-attendanceStatus="@AttendanceStatuses.Absent" asp-route-eventId="@selectedEventId" asp-route-search="@search" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn @(reg.AttendanceStatus == AttendanceStatuses.Absent ? "btn-danger" : "btn-outline-danger")" title="Mark Absent">
+                                                        <i class="bi bi-x-lg"></i> Absent
+                                                    </button>
+                                                </form>
+
+                                                <!-- Reset Button -->
+                                                <form asp-action="UpdateAttendance" asp-route-id="@reg.RegistrationId" asp-route-attendanceStatus="@AttendanceStatuses.Unmarked" asp-route-eventId="@selectedEventId" asp-route-search="@search" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-outline-secondary" title="Reset Status">
+                                                        <i class="bi bi-dash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

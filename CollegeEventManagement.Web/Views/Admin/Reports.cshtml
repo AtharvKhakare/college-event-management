@@ -1,0 +1,144 @@
+@{
+    ViewData["Title"] = "Reports & CSV Export - Admin";
+    var events = ViewBag.Events as List<EventDto> ?? new List<EventDto>();
+    var selectedEventId = ViewBag.EventId as int?;
+    var selectedStatus = ViewBag.Status as string;
+    var selectedAttendanceStatus = ViewBag.AttendanceStatus as string;
+}
+
+<div class="admin-layout">
+    <partial name="_AdminSidebar" />
+
+    <div class="admin-content">
+        <div class="mb-4">
+            <h2 class="fw-bold mb-1" style="color: var(--dark-purple);">Reports &amp; Data Export</h2>
+            <p class="text-muted small mb-0">Generate and download official CSV event rosters and attendance sheets</p>
+        </div>
+
+        <div class="row g-4" style="max-width: 960px;">
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
+                    <h5 class="fw-bold mb-3" style="color: var(--dark-purple);">
+                        <i class="bi bi-file-earmark-spreadsheet-fill text-success me-2"></i>Export Registrations to CSV
+                    </h5>
+                    <p class="text-muted small mb-4">
+                        Filter by event, booking status, or attendance state to download a clean, structured spreadsheet compatible with Microsoft Excel and Google Sheets.
+                    </p>
+
+                    <form asp-action="ExportCsv" method="get">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-muted">Filter by Event</label>
+                            <select name="eventId" class="form-select form-select-custom">
+                                <option value="">All Events (Full Campus Export)</option>
+                                @foreach (var ev in events)
+                                {
+                                    if (selectedEventId == ev.EventId)
+                                    {
+                                        <option value="@ev.EventId" selected>@ev.Title (@ev.EventDate.ToString("MMM dd"))</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@ev.EventId">@ev.Title (@ev.EventDate.ToString("MMM dd"))</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-muted">Registration Status</label>
+                                <select name="status" class="form-select form-select-custom">
+                                    <option value="">All Statuses</option>
+                                    @foreach (var st in RegistrationStatus.All)
+                                    {
+                                        if (selectedStatus == st)
+                                        {
+                                            <option value="@st" selected>@st</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@st">@st</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-muted">Attendance Status</label>
+                                <select name="attendanceStatus" class="form-select form-select-custom">
+                                    <option value="">All Records</option>
+                                    @foreach (var att in AttendanceStatuses.All)
+                                    {
+                                        if (selectedAttendanceStatus == att)
+                                        {
+                                            <option value="@att" selected>@att</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@att">@att</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-purple py-3 px-4 w-100 fs-6">
+                            <i class="bi bi-download me-2"></i> Download CSV File
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Export Documentation & Fields Overview -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <h5 class="fw-bold mb-3">CSV Schema Definition</h5>
+                    <p class="text-muted small mb-3">The downloaded CSV file contains the following structured fields:</p>
+                    
+                    <ul class="list-group list-group-flush small text-muted">
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                            <strong>RegistrationId</strong>
+                            <span>Unique registration ticket #</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                            <strong>StudentName</strong>
+                            <span>Full name of participant</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                            <strong>StudentId</strong>
+                            <span>College Roll / ID Number</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                            <strong>Department</strong>
+                            <span>Academic branch</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                            <strong>EventTitle</strong>
+                            <span>Title of registered event</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                            <strong>Category</strong>
+                            <span>Tech, Sports, Cultural, etc.</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                            <strong>EventDate</strong>
+                            <span>Date of the event</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                            <strong>Status</strong>
+                            <span>Approved / Rejected</span>
+                        </li>
+                        <li class="list-group-item px-0 py-2 d-flex justify-content-between">
+                            <strong>AttendanceStatus</strong>
+                            <span>Present / Absent / Unmarked</span>
+                        </li>
+                    </ul>
+
+                    <div class="mt-4 p-3 rounded-3 bg-light border small text-muted">
+                        <i class="bi bi-shield-lock-fill text-primary me-1"></i>
+                        Student passwords and private system credentials are never exported in reports.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

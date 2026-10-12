@@ -1,0 +1,118 @@
+@model List<RegistrationDto>
+@{
+    ViewData["Title"] = "My Registrations - CampusEvents";
+}
+
+<div class="container py-4">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb small mb-1">
+                    <li class="breadcrumb-item"><a asp-action="Dashboard" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">My Registrations</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">My Event Registrations</h2>
+            <p class="text-muted small mb-0">Active event bookings and entry ticket passes</p>
+        </div>
+        <div class="col-md-6 text-md-end mt-3 mt-md-0">
+            <a asp-action="RegistrationHistory" class="btn btn-outline-purple me-2">
+                <i class="bi bi-clock-history me-1"></i> Full History
+            </a>
+            <a asp-controller="Events" asp-action="Index" class="btn btn-primary-purple">
+                <i class="bi bi-plus-circle me-1"></i> Register New Event
+            </a>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+            <div class="stat-icon-box mx-auto mb-3" style="width: 70px; height: 70px; font-size: 2rem;">
+                <i class="bi bi-ticket-perforated"></i>
+            </div>
+            <h4 class="fw-bold mb-2">No Active Registrations</h4>
+            <p class="text-muted mb-4">You have not registered for any upcoming college activities yet.</p>
+            <div>
+                <a asp-controller="Events" asp-action="Index" class="btn btn-primary-purple">
+                    Browse All Events
+                </a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var reg in Model)
+            {
+                var categoryBadgeClass = reg.EventCategory.ToLower() switch
+                {
+                    "technical" => "badge-technical",
+                    "cultural" => "badge-cultural",
+                    "sports" => "badge-sports",
+                    "workshop" => "badge-workshop",
+                    "seminar" => "badge-seminar",
+                    _ => "badge-general"
+                };
+
+                <div class="col-md-6 col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 bg-white d-flex flex-column" style="border-top: 5px solid var(--primary-purple) !important;">
+                        <div class="p-4 flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge @categoryBadgeClass rounded-pill small">@reg.EventCategory</span>
+                                <span class="badge bg-success-subtle text-success rounded-pill small px-3 py-1">
+                                    <i class="bi bi-check-circle-fill me-1"></i> @reg.Status
+                                </span>
+                            </div>
+
+                            <h5 class="fw-bold mb-2" style="color: var(--text-primary);">@reg.EventTitle</h5>
+
+                            <div class="p-3 rounded-3 bg-light border mb-3">
+                                <div class="d-flex align-items-center gap-2 small text-muted mb-2">
+                                    <i class="bi bi-calendar3 text-primary"></i>
+                                    <span><strong>@reg.EventDate.ToString("ddd, MMM dd, yyyy")</strong></span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 small text-muted mb-2">
+                                    <i class="bi bi-clock text-primary"></i>
+                                    <span>@reg.StartTime.ToString(@"hh\:mm") - @reg.EndTime.ToString(@"hh\:mm")</span>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 small text-muted">
+                                    <i class="bi bi-geo-alt text-primary"></i>
+                                    <span class="text-truncate">@reg.Venue</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Booked On:</span>
+                                <span>@reg.RegistrationDate.ToString("MMM dd, yyyy")</span>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted mt-1">
+                                <span>Ticket Pass ID:</span>
+                                <strong>#REG-@reg.RegistrationId.ToString("D5")</strong>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-light border-top d-flex justify-content-between align-items-center">
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@reg.EventId" class="btn btn-sm btn-light-lavender">
+                                View Event
+                            </a>
+                            @if (reg.CanCancel)
+                            {
+                                <form asp-action="CancelRegistration" asp-route-id="@reg.RegistrationId" method="post" onsubmit="return confirm('Are you sure you want to cancel this registration ticket?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill">
+                                        <i class="bi bi-x-circle me-1"></i> Cancel Booking
+                                    </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary-subtle text-muted rounded-pill small">Concluded</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

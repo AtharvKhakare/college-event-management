@@ -1,0 +1,24 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450">
+  <defs>
+    <linearGradient id="grad-badminton" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4338CA;stop-opacity:1" />
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="800" height="450" fill="url(#grad-badminton)" />
+  <rect width="800" height="450" fill="url(#grid)" />
+  <circle cx="700" cy="90" r="130" fill="rgba(255,255,255,0.06)" />
+  <circle cx="120" cy="380" r="160" fill="rgba(255,255,255,0.05)" />
+  
+  <rect x="60" y="50" width="130" height="34" rx="17" fill="rgba(255,255,255,0.22)" />
+  <text x="125" y="73" fill="#FFFFFF" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="bold" text-anchor="middle">Sports</text>
+  
+  <text x="60" y="230" fill="#FFFFFF" font-family="'Segoe UI', Roboto, sans-serif" font-size="36" font-weight="bold">Badminton and TT Open</text>
+  <text x="60" y="275" fill="rgba(255,255,255,0.85)" font-family="'Segoe UI', Roboto, sans-serif" font-size="20">Annual Campus Tournament</text>
+  
+  <rect x="60" y="340" width="220" height="44" rx="22" fill="#FFFFFF" />
+  <text x="170" y="368" fill="#4527A0" font-family="'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="bold" text-anchor="middle">Campus Event 2026</text>
+</svg>

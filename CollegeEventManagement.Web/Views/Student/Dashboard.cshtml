@@ -1,0 +1,195 @@
+@model StudentDashboardDto
+@{
+    ViewData["Title"] = "Student Dashboard - CampusEvents";
+}
+
+<div class="container py-4">
+    <!-- Welcome Header Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white position-relative overflow-hidden" 
+         style="background: linear-gradient(135deg, var(--dark-purple), var(--primary-purple));">
+        <div class="row align-items-center position-relative" style="z-index: 2;">
+            <div class="col-md-8">
+                <span class="badge bg-white text-dark rounded-pill px-3 py-1 mb-2 fw-bold" style="color: var(--primary-purple) !important;">
+                    <i class="bi bi-mortarboard-fill me-1"></i> Student Portal
+                </span>
+                <h2 class="fw-bold mb-1 text-white">Welcome, @Model.StudentName!</h2>
+                <p class="mb-0 opacity-75 small">
+                    Roll No: <strong>@(Model.StudentId ?? "N/A")</strong> | Dept: <strong>@(Model.Department ?? "General")</strong>
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a asp-controller="Events" asp-action="Index" class="btn btn-light rounded-pill px-3 py-2 fw-semibold text-primary shadow-sm">
+                    <i class="bi bi-plus-circle me-1"></i> Browse New Events
+                </a>
+            </div>
+        </div>
+        <div style="position: absolute; right: -20px; bottom: -40px; font-size: 10rem; opacity: 0.08;">
+            <i class="bi bi-calendar-check"></i>
+        </div>
+    </div>
+
+    <!-- Stat Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="stat-label">Total Registered</span>
+                        <div class="stat-number">@Model.TotalRegisteredEvents</div>
+                    </div>
+                    <div class="stat-icon-box">
+                        <i class="bi bi-ticket-perforated-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="stat-label">Upcoming</span>
+                        <div class="stat-number" style="color: #6C3CE9;">@Model.UpcomingEventsCount</div>
+                    </div>
+                    <div class="stat-icon-box" style="background-color: #EDE9FE; color: #6C3CE9;">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="stat-label">Attended</span>
+                        <div class="stat-number" style="color: #059669;">@Model.AttendedEventsCount</div>
+                    </div>
+                    <div class="stat-icon-box" style="background-color: #DCFCE7; color: #059669;">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <span class="stat-label">Past Events</span>
+                        <div class="stat-number" style="color: #6B7280;">@Model.PastEventsCount</div>
+                    </div>
+                    <div class="stat-icon-box" style="background-color: #F3F4F6; color: #6B7280;">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Events Section -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0" style="color: var(--dark-purple);">
+                        <i class="bi bi-calendar-event text-primary me-2"></i>Upcoming Registered Events
+                    </h5>
+                    <a asp-action="MyRegistrations" class="btn btn-sm btn-outline-purple">View All</a>
+                </div>
+
+                @if (!Model.UpcomingRegistrations.Any())
+                {
+                    <div class="p-5 text-center bg-light rounded-4 border">
+                        <i class="bi bi-calendar-plus fs-1 text-muted mb-3 d-block"></i>
+                        <h5 class="fw-bold text-muted">No upcoming event bookings</h5>
+                        <p class="text-muted small mb-3">You haven't registered for any future events yet.</p>
+                        <a asp-controller="Events" asp-action="Index" class="btn btn-primary-purple btn-sm">
+                            Explore Campus Events
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex flex-column gap-3">
+                        @foreach (var reg in Model.UpcomingRegistrations)
+                        {
+                            <div class="card border border-light-subtle rounded-3 p-3 shadow-none bg-light">
+                                <div class="row align-items-center g-3">
+                                    <div class="col-auto">
+                                        <div class="rounded-3 text-center p-2 text-white" style="background: var(--primary-purple); width: 60px;">
+                                            <span class="d-block small text-uppercase" style="font-size: 0.7rem;">@reg.EventDate.ToString("MMM")</span>
+                                            <strong class="fs-4 d-block lh-1">@reg.EventDate.Day</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col">
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <span class="badge bg-primary rounded-pill small">@reg.EventCategory</span>
+                                            <span class="badge bg-success-subtle text-success rounded-pill small">@reg.Status</span>
+                                        </div>
+                                        <h6 class="fw-bold mb-1 text-truncate">@reg.EventTitle</h6>
+                                        <div class="d-flex flex-wrap gap-3 small text-muted">
+                                            <span><i class="bi bi-clock me-1 text-primary"></i>@reg.StartTime.ToString(@"hh\:mm")</span>
+                                            <span><i class="bi bi-geo-alt me-1 text-primary"></i>@reg.Venue</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-auto text-md-end d-flex gap-2">
+                                        <a asp-controller="Events" asp-action="Details" asp-route-id="@reg.EventId" class="btn btn-sm btn-light-lavender">
+                                            Details
+                                        </a>
+                                        @if (reg.CanCancel)
+                                        {
+                                            <form asp-action="CancelRegistration" asp-route-id="@reg.RegistrationId" asp-route-returnAction="Dashboard" method="post" onsubmit="return confirm('Are you sure you want to cancel this registration?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" title="Cancel Booking">
+                                                    Cancel
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Right Quick Actions & Profile Column -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                <h5 class="fw-bold mb-3">Student Profile</h5>
+                <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
+                    <div class="stat-icon-box" style="width: 50px; height: 50px; font-size: 1.5rem;">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">@Model.StudentName</h6>
+                        <span class="small text-muted">@Model.Email</span>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column gap-2 small text-muted mb-4">
+                    <div class="d-flex justify-content-between">
+                        <span>Student Roll No:</span>
+                        <strong class="text-dark">@(Model.StudentId ?? "Not Provided")</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Department:</span>
+                        <strong class="text-dark">@(Model.Department ?? "Not Provided")</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Academic Year:</span>
+                        <strong class="text-dark">@(Model.AcademicYear ?? "Not Provided")</strong>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a asp-action="Profile" class="btn btn-light-lavender">
+                        <i class="bi bi-person me-1"></i> Full Profile
+                    </a>
+                    <a asp-action="RegistrationHistory" class="btn btn-outline-secondary rounded-pill">
+                        <i class="bi bi-clock-history me-1"></i> Full Registration History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

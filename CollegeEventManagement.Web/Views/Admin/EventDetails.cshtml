@@ -1,0 +1,136 @@
+@model EventDto
+@{
+    ViewData["Title"] = $"{Model.Title} - Admin Event Details";
+    var registrations = ViewBag.Registrations as List<RegistrationDto> ?? new List<RegistrationDto>();
+}
+
+<div class="admin-layout">
+    <partial name="_AdminSidebar" />
+
+    <div class="admin-content">
+        <div class="mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb small mb-1">
+                    <li class="breadcrumb-item"><a asp-action="Index">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Events">Events</a></li>
+                    <li class="breadcrumb-item active text-truncate" style="max-width: 250px;" aria-current="page">@Model.Title</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h2 class="fw-bold mb-1" style="color: var(--dark-purple);">@Model.Title</h2>
+                    <span class="badge bg-light text-dark border">@Model.Category</span>
+                    <span class="badge @(Model.IsPublished ? "bg-success-subtle text-success" : "bg-secondary-subtle text-muted") ms-1">
+                        @(Model.IsPublished ? "Published" : "Draft")
+                    </span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a asp-action="EditEvent" asp-route-id="@Model.EventId" class="btn btn-outline-purple">
+                        <i class="bi bi-pencil me-1"></i> Edit Event
+                    </a>
+                    <a asp-action="Attendance" asp-route-eventId="@Model.EventId" class="btn btn-primary-purple">
+                        <i class="bi bi-clipboard-check me-1"></i> Mark Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Event Summary Metrics -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <span class="stat-label">Total Bookings</span>
+                    <div class="stat-number">@Model.RegisteredCount</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <span class="stat-label">Total Capacity</span>
+                    <div class="stat-number" style="color: var(--dark-purple);">@Model.Capacity</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <span class="stat-label">Seats Remaining</span>
+                    <div class="stat-number" style="color: @(Model.RemainingCapacity <= 5 ? "var(--error)" : "var(--success)");">
+                        @Model.RemainingCapacity
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <span class="stat-label">Event Date</span>
+                    <div class="stat-number fs-4 mt-2" style="color: #4F46E5;">
+                        @Model.EventDate.ToString("MMM dd")
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Registered Students Table -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-4">
+            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0">Registered Students (@registrations.Count)</h5>
+                <a asp-action="ExportCsv" asp-route-eventId="@Model.EventId" class="btn btn-sm btn-light-lavender">
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i> Export Event CSV
+                </a>
+            </div>
+
+            @if (!registrations.Any())
+            {
+                <div class="p-5 text-center text-muted">
+                    <i class="bi bi-people fs-1 text-muted mb-2 d-block"></i>
+                    <h6>No students registered for this event yet</h6>
+                    <p class="small mb-0">When students reserve slots, their details and entry passes will appear here.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Student Name</th>
+                                <th>Email</th>
+                                <th>Roll / ID No.</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Attendance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var reg in registrations)
+                            {
+                                var attendanceBadge = reg.AttendanceStatus switch
+                                {
+                                    AttendanceStatuses.Present => "badge-present",
+                                    AttendanceStatuses.Absent => "badge-absent",
+                                    _ => "badge-unmarked"
+                                };
+
+                                <tr>
+                                    <td><strong class="text-primary">#REG-@reg.RegistrationId.ToString("D5")</strong></td>
+                                    <td><strong class="text-dark">@reg.StudentName</strong></td>
+                                    <td><span class="text-muted small">@reg.StudentEmail</span></td>
+                                    <td>@(reg.StudentId ?? "-")</td>
+                                    <td>@(reg.Department ?? "-")</td>
+                                    <td>
+                                        <span class="badge @(reg.Status == RegistrationStatus.Approved ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning") rounded-pill">
+                                            @reg.Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge-status @attendanceBadge">
+                                            @reg.AttendanceStatus
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
